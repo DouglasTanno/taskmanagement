@@ -4,12 +4,14 @@ import com.tanno.taskmanager.dto.request.TaskRequest;
 import com.tanno.taskmanager.dto.request.TaskStatusRequest;
 import com.tanno.taskmanager.dto.response.TaskResponse;
 import com.tanno.taskmanager.service.TaskService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Tasks")
 @RestController
 @RequestMapping("/projects/{projectId}/tasks")
 public class TaskController {
@@ -52,14 +54,6 @@ public class TaskController {
         return taskService.update(taskId, request);
     }
 
-    @DeleteMapping("/{taskId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(
-            @PathVariable Long taskId) {
-
-        taskService.delete(taskId);
-    }
-
     @PatchMapping("/{taskId}/status")
     public TaskResponse updateStatus(
             @PathVariable Long taskId,
@@ -71,4 +65,11 @@ public class TaskController {
         );
     }
 
+    @DeleteMapping("/{taskId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(
+            @PathVariable Long taskId) {
+
+        taskService.delete(taskId);
+    }
 }

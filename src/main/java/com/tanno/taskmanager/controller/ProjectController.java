@@ -2,26 +2,24 @@ package com.tanno.taskmanager.controller;
 
 import com.tanno.taskmanager.dto.request.ProjectRequest;
 import com.tanno.taskmanager.dto.response.ProjectResponse;
-import com.tanno.taskmanager.model.User;
 import com.tanno.taskmanager.repository.UserRepository;
 import com.tanno.taskmanager.service.ProjectService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Tag(name = "Projects")
 @RestController
 @RequestMapping("/projects")
 public class ProjectController {
 
     private final ProjectService projectService;
-    private final UserRepository userRepository;
 
-    public ProjectController(ProjectService projectService,
-                             UserRepository userRepository) {
+    public ProjectController(ProjectService projectService) {
         this.projectService = projectService;
-        this.userRepository = userRepository;
     }
 
     @PostMapping
@@ -30,6 +28,14 @@ public class ProjectController {
             @Valid @RequestBody ProjectRequest request) {
 
         return projectService.create(request);
+    }
+
+    @PostMapping("/{projectId}/members/{userId}")
+    public ProjectResponse addMember(
+            @PathVariable Long projectId,
+            @PathVariable Long userId) {
+
+        return projectService.addMember(projectId, userId);
     }
 
     @GetMapping
@@ -58,14 +64,6 @@ public class ProjectController {
             @PathVariable Long id) {
 
         projectService.delete(id);
-    }
-
-    @PostMapping("/{projectId}/members/{userId}")
-    public ProjectResponse addMember(
-            @PathVariable Long projectId,
-            @PathVariable Long userId) {
-
-        return projectService.addMember(projectId, userId);
     }
 
     @DeleteMapping("/{projectId}/members/{userId}")
