@@ -4,6 +4,9 @@ import com.tanno.taskmanager.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -26,4 +29,7 @@ public class User {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "owner")
+    private Set<Project> ownedProjects = new HashSet<>();
 }

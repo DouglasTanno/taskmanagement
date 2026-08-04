@@ -3,16 +3,14 @@ package com.tanno.taskmanager.model;
 import com.tanno.taskmanager.enums.Priority;
 import com.tanno.taskmanager.enums.TaskStatus;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+@Entity
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity
-@Table(name = "tasks")
 public class Task {
 
     @Id
@@ -21,7 +19,6 @@ public class Task {
 
     private String title;
 
-    @Column(columnDefinition = "TEXT")
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -36,11 +33,35 @@ public class Task {
 
     private LocalDateTime deadline;
 
+
     @ManyToOne
-    @JoinColumn(name = "project_id", nullable = false)
+    @JoinColumn(name = "project_id")
     private Project project;
+
 
     @ManyToOne
     @JoinColumn(name = "assignee_id")
     private User assignee;
+
+    @ManyToOne
+    @JoinColumn(name = "created_by")
+    private User createdBy;
+
+
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+
+        if (status == null) {
+            status = TaskStatus.TODO;
+        }
+    }
+
+
+    @PreUpdate
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
 }

@@ -1,16 +1,15 @@
 package com.tanno.taskmanager.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
+@Entity
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Entity
-@Table(name = "projects")
 public class Project {
 
     @Id
@@ -22,7 +21,7 @@ public class Project {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "owner_id", nullable = false)
+    @JoinColumn(name = "owner_id")
     private User owner;
 
     @ManyToMany
@@ -31,5 +30,5 @@ public class Project {
             joinColumns = @JoinColumn(name = "project_id"),
             inverseJoinColumns = @JoinColumn(name = "user_id")
     )
-    private List<User> members;
+    private Set<User> members = new HashSet<>();
 }
