@@ -4,6 +4,7 @@ import com.tanno.taskmanager.dto.request.TaskRequest;
 import com.tanno.taskmanager.dto.request.TaskStatusRequest;
 import com.tanno.taskmanager.dto.response.TaskResponse;
 import com.tanno.taskmanager.service.TaskService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Tasks")
 @RestController
 @RequestMapping("/projects/{projectId}/tasks")
