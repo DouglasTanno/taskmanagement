@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/api";
-
 import {
     Stack,
     TextField,
@@ -23,7 +22,33 @@ function CreateTaskForm({
     const [description, setDescription] = useState("");
     const [priority, setPriority] = useState("LOW");
     const [assigneeId, setAssigneeId] = useState("");
+    const [users, setUsers] = useState([]);
 
+
+    useEffect(() => {
+
+        async function loadMembers() {
+
+            try {
+
+                const response = await api.get(
+                    `/projects/${projectId}/members`
+                );
+
+                setUsers(response.data);
+
+            } catch (error) {
+
+                console.log(error);
+
+            }
+
+        }
+
+
+        loadMembers();
+
+    }, [projectId]);
 
     async function handleSubmit(event) {
 
@@ -144,14 +169,27 @@ function CreateTaskForm({
 
 
             <TextField
-                label="ID do responsável"
-                type="number"
+                select
+                label="Responsável"
                 value={assigneeId}
                 onChange={(e) =>
                     setAssigneeId(e.target.value)
                 }
                 required
-            />
+            >
+
+                {users.map(user => (
+
+                    <MenuItem
+                        key={user.id}
+                        value={user.id}
+                    >
+                        {user.name}
+                    </MenuItem>
+
+                ))}
+
+            </TextField>
 
 
             <Stack

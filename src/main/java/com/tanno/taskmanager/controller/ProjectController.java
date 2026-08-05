@@ -2,6 +2,7 @@ package com.tanno.taskmanager.controller;
 
 import com.tanno.taskmanager.dto.request.ProjectRequest;
 import com.tanno.taskmanager.dto.response.ProjectResponse;
+import com.tanno.taskmanager.dto.response.UserResponse;
 import com.tanno.taskmanager.repository.UserRepository;
 import com.tanno.taskmanager.service.ProjectService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -74,5 +75,12 @@ public class ProjectController {
             @PathVariable Long userId) {
 
         return projectService.removeMember(projectId, userId);
+    }
+
+    @GetMapping("/{id}/members")
+    public List<UserResponse> members(
+            @PathVariable Long id) {
+
+        return projectService.findMembers(id);
     }
 }
