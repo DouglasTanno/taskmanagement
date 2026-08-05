@@ -191,4 +191,47 @@ public class TaskServiceTest {
         verify(taskRepository, never())
                 .save(any());
     }
+
+    @Test
+    void shouldThrowExceptionWhenUserAlreadyHasFiveTasksInProgress() {
+
+        User owner = new User();
+        owner.setId(1L);
+
+        User assignee = new User();
+        assignee.setId(2L);
+
+        Project project = new Project();
+        project.setOwner(owner);
+
+        Task task = new Task();
+        task.setProject(project);
+        task.setAssignee(assignee);
+        task.setStatus(TaskStatus.TODO);
+
+        when(taskRepository.findById(1L))
+                .thenReturn(Optional.of(task));
+
+        when(currentUserService.getCurrentUser())
+                .thenReturn(owner);
+
+        when(taskRepository.countByAssigneeIdAndStatus(
+                2L,
+                TaskStatus.IN_PROGRESS))
+                .thenReturn(5L);
+
+        BusinessException exception = assertThrows(
+                BusinessException.class,
+                () -> taskService.updateStatus(
+                        1L,
+                        TaskStatus.IN_PROGRESS)
+        );
+
+        assertEquals(
+                "The user already has 5 tasks in progress.",
+                exception.getMessage()
+        );
+
+        verify(taskRepository, never()).save(any(Task.class));
+    }
 }
