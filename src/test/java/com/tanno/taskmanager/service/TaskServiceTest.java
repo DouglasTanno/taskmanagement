@@ -17,7 +17,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -227,11 +229,323 @@ public class TaskServiceTest {
                         TaskStatus.IN_PROGRESS)
         );
 
-        assertEquals(
-                "The user already has 5 tasks in progress.",
-                exception.getMessage()
+        assertEquals("The user already has 5 tasks in progress.",exception.getMessage()
         );
 
         verify(taskRepository, never()).save(any(Task.class));
+    }
+
+    @Test
+    void shouldFilterTasksByStatus() {
+
+        User owner = new User();
+        owner.setId(1L);
+
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+        project.setMembers(new HashSet<>());
+
+        Task task1 = new Task();
+        task1.setId(1L);
+        task1.setTitle("Task done");
+        task1.setStatus(TaskStatus.DONE);
+        task1.setProject(project);
+        task1.setAssignee(owner);
+        task1.setCreatedBy(owner);
+
+        Task task2 = new Task();
+        task2.setId(2L);
+        task2.setTitle("Task progress");
+        task2.setStatus(TaskStatus.IN_PROGRESS);
+        task2.setProject(project);
+        task2.setAssignee(owner);
+        task2.setCreatedBy(owner);
+
+        when(projectRepository.findById(1L))
+                .thenReturn(Optional.of(project));
+
+        when(currentUserService.getCurrentUser())
+                .thenReturn(owner);
+
+        when(taskRepository.findByProjectId(1L))
+                .thenReturn(List.of(task1, task2));
+
+        List<TaskResponse> response =
+                taskService.findAllFiltered(
+                        1L,
+                        TaskStatus.DONE,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                );
+
+        assertEquals(1, response.size());
+        assertEquals(TaskStatus.DONE, response.get(0).getStatus());
+    }
+
+    @Test
+    void shouldFilterTasksByPriority() {
+
+        User owner = new User();
+        owner.setId(1L);
+
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+
+        Task high = new Task();
+        high.setId(1L);
+        high.setPriority(Priority.HIGH);
+        high.setProject(project);
+        high.setAssignee(owner);
+        high.setCreatedBy(owner);
+
+        Task low = new Task();
+        low.setId(2L);
+        low.setPriority(Priority.LOW);
+        low.setProject(project);
+        low.setAssignee(owner);
+        low.setCreatedBy(owner);
+
+        when(projectRepository.findById(1L))
+                .thenReturn(Optional.of(project));
+
+        when(currentUserService.getCurrentUser())
+                .thenReturn(owner);
+
+        when(taskRepository.findByProjectId(1L))
+                .thenReturn(List.of(high, low));
+
+        List<TaskResponse> response =
+                taskService.findAllFiltered(
+                        1L,
+                        null,
+                        Priority.HIGH,
+                        null,
+                        null,
+                        null,
+                        null
+                );
+
+        assertEquals(1, response.size());
+        assertEquals(
+                Priority.HIGH,
+                response.get(0).getPriority()
+        );
+
+    }
+
+    @Test
+    void shouldFilterTasksByAssignee() {
+
+        User owner = new User();
+        owner.setId(1L);
+
+        User member = new User();
+        member.setId(2L);
+
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+
+        Task task = new Task();
+        task.setId(1L);
+        task.setProject(project);
+        task.setAssignee(member);
+        task.setCreatedBy(owner);
+
+        when(projectRepository.findById(1L))
+                .thenReturn(Optional.of(project));
+
+        when(currentUserService.getCurrentUser())
+                .thenReturn(owner);
+
+        when(taskRepository.findByProjectId(1L))
+                .thenReturn(List.of(task));
+
+        List<TaskResponse> response =
+                taskService.findAllFiltered(
+                        1L,
+                        null,
+                        null,
+                        2L,
+                        null,
+                        null,
+                        null
+                );
+
+        assertEquals(1, response.size());
+        assertEquals(
+                2L,
+                response.get(0).getAssigneeId()
+        );
+
+    }
+
+    @Test
+    void shouldFilterTasksByDateRange() {
+
+        User owner = new User();
+        owner.setId(1L);
+
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+
+        Task oldTask = new Task();
+        oldTask.setId(1L);
+        oldTask.setCreatedAt(LocalDateTime.of(2025,1,1,0,0));
+        oldTask.setProject(project);
+        oldTask.setAssignee(owner);
+        oldTask.setCreatedBy(owner);
+
+        Task newTask = new Task();
+        newTask.setId(2L);
+        newTask.setCreatedAt(LocalDateTime.of(2026,1,1,0,0));
+        newTask.setProject(project);
+        newTask.setAssignee(owner);
+        newTask.setCreatedBy(owner);
+
+        when(projectRepository.findById(1L))
+                .thenReturn(Optional.of(project));
+
+        when(currentUserService.getCurrentUser())
+                .thenReturn(owner);
+
+        when(taskRepository.findByProjectId(1L))
+                .thenReturn(List.of(oldTask,newTask));
+
+        List<TaskResponse> response =
+                taskService.findAllFiltered(
+                        1L,
+                        null,
+                        null,
+                        null,
+                        LocalDateTime.of(2026,1,1,0,0),
+                        null,
+                        null
+                );
+
+        assertEquals(1,response.size());
+        assertEquals(2L,response.get(0).getId());
+
+    }
+
+    @Test
+    void shouldSortTasksByDeadline() {
+
+        User owner = new User();
+        owner.setId(1L);
+
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(owner);
+
+        Task later = new Task();
+        later.setId(1L);
+        later.setDeadline(LocalDateTime.of(2026,12,1,0,0));
+        later.setProject(project);
+        later.setAssignee(owner);
+        later.setCreatedBy(owner);
+
+        Task sooner = new Task();
+        sooner.setId(2L);
+        sooner.setDeadline(LocalDateTime.of(2026,5,1,0,0));
+        sooner.setProject(project);
+        sooner.setAssignee(owner);
+        sooner.setCreatedBy(owner);
+
+        when(projectRepository.findById(1L))
+                .thenReturn(Optional.of(project));
+
+        when(currentUserService.getCurrentUser())
+                .thenReturn(owner);
+
+        when(taskRepository.findByProjectId(1L))
+                .thenReturn(List.of(later, sooner));
+
+        List<TaskResponse> response =
+                taskService.findAllFiltered(
+                        1L,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        "deadline"
+                );
+
+        assertEquals(2L,response.get(0).getId());
+
+    }
+
+    @Test
+    void shouldSearchTasksByTitleOrDescription() {
+
+        User user = new User();
+        user.setId(1L);
+
+        Project project = new Project();
+        project.setId(1L);
+        project.setOwner(user);
+
+        Task task = new Task();
+
+        task.setId(10L);
+        task.setTitle("Implementar login");
+        task.setDescription("Criar autenticação JWT");
+        task.setStatus(TaskStatus.TODO);
+        task.setPriority(Priority.HIGH);
+        task.setProject(project);
+        task.setAssignee(user);
+        task.setCreatedBy(user);
+
+        when(taskRepository
+                .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                        "login",
+                        "login"
+                ))
+                .thenReturn(List.of(task));
+
+        List<TaskResponse> response = taskService.search("login");
+
+        assertEquals(1,response.size());
+
+        assertEquals("Implementar login",response.get(0).getTitle());
+
+        assertEquals("Criar autenticação JWT",response.get(0).getDescription());
+
+        verify(taskRepository)
+                .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                        "login",
+                        "login"
+                );
+
+    }
+
+    @Test
+    void shouldReturnEmptyListWhenSearchHasNoResults() {
+
+        when(taskRepository
+                .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                        "naoexiste",
+                        "naoexiste"
+                ))
+                .thenReturn(List.of());
+
+        List<TaskResponse> response =
+                taskService.search("naoexiste");
+
+        assertTrue(response.isEmpty());
+
+        verify(taskRepository)
+                .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                        "naoexiste",
+                        "naoexiste"
+                );
+
     }
 }
