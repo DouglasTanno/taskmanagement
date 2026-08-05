@@ -2,6 +2,8 @@ package com.tanno.taskmanager.service;
 
 import com.tanno.taskmanager.dto.request.TaskRequest;
 import com.tanno.taskmanager.dto.response.TaskResponse;
+import com.tanno.taskmanager.dto.response.TaskSummaryResponse;
+import com.tanno.taskmanager.enums.Priority;
 import com.tanno.taskmanager.enums.TaskStatus;
 import com.tanno.taskmanager.exception.BusinessException;
 import com.tanno.taskmanager.exception.ResourceNotFoundException;
@@ -14,6 +16,8 @@ import com.tanno.taskmanager.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class TaskService {
@@ -48,21 +52,17 @@ public class TaskService {
                 !project.getOwner().getId().equals(assignee.getId())) {
 
             throw new BusinessException(
-                    "Usuário não pertence ao projeto.");
+                    "User does not belong to this project.");
         }
 
         User creator = currentUserService.getCurrentUser();
 
-        Task task = new Task();
-
-        task.setTitle(request.getTitle());
-        task.setDescription(request.getDescription());
-        task.setPriority(request.getPriority());
-        task.setDeadline(request.getDeadline());
-        task.setProject(project);
-        task.setAssignee(assignee);
-        task.setCreatedBy(creator);
-        task.setStatus(TaskStatus.TODO);
+        Task task = buildTask(
+                request,
+                project,
+                assignee,
+                creator
+        );
 
         return toResponse(taskRepository.save(task));
     }
@@ -71,7 +71,7 @@ public class TaskService {
 
         Project project = findProject(projectId);
 
-        validateProjectAccess(project);
+        checkProjectAccess(project);
 
         return taskRepository.findByProjectId(projectId)
                 .stream()
@@ -83,7 +83,7 @@ public class TaskService {
 
         Task task = findTask(id);
 
-        validateProjectAccess(task.getProject());
+        checkProjectAccess(task.getProject());
 
         return toResponse(task);
     }
@@ -92,7 +92,7 @@ public class TaskService {
 
         Task task = findTask(id);
 
-        validateTaskManagement(task);
+        checkTaskManagementPermission(task);
 
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
@@ -106,7 +106,7 @@ public class TaskService {
 
         Task task = findTask(id);
 
-        validateTaskManagement(task);
+        checkTaskManagementPermission(task);
 
         taskRepository.delete(task);
     }
@@ -115,13 +115,13 @@ public class TaskService {
 
         Task task = findTask(id);
 
-        validateStatusUpdatePermission(task);
+        checkStatusUpdatePermission(task);
 
         if (task.getStatus() == TaskStatus.DONE &&
                 status != TaskStatus.DONE) {
 
             throw new BusinessException(
-                    "Uma tarefa concluída não pode voltar de status.");
+                    "A completed task cannot revert to a previous status.");
         }
 
         if (status == TaskStatus.IN_PROGRESS &&
@@ -134,13 +134,65 @@ public class TaskService {
 
             if (count >= 5) {
                 throw new BusinessException(
-                        "O usuário já possui 5 tarefas em andamento.");
+                        "The user already has 5 tasks in progress.");
             }
         }
+
+        validateStatusChange(
+                task.getStatus(),
+                status
+        );
 
         task.setStatus(status);
 
         return toResponse(taskRepository.save(task));
+    }
+
+    public List<TaskResponse> search(String text) {
+
+        return taskRepository
+                .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(
+                        text,
+                        text
+                )
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    public TaskSummaryResponse summary(Long projectId) {
+
+        Project project = findProject(projectId);
+
+        checkProjectAccess(project);
+
+        List<Object[]> statusResults =
+                taskRepository.countByStatus(projectId);
+
+        List<Object[]> priorityResults =
+                taskRepository.countByPriority(projectId);
+
+
+        Map<TaskStatus, Long> byStatus =
+                statusResults.stream()
+                        .collect(Collectors.toMap(
+                                x -> (TaskStatus)x[0],
+                                x -> (Long)x[1]
+                        ));
+
+
+        Map<Priority, Long> byPriority =
+                priorityResults.stream()
+                        .collect(Collectors.toMap(
+                                x -> (Priority)x[0],
+                                x -> (Long)x[1]
+                        ));
+
+
+        return new TaskSummaryResponse(
+                byStatus,
+                byPriority
+        );
     }
 
     private Project findProject(Long projectId) {
@@ -148,7 +200,7 @@ public class TaskService {
         return projectRepository.findById(projectId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Projeto não encontrado"));
+                                "Project not found."));
     }
 
     private Task findTask(Long taskId) {
@@ -156,7 +208,7 @@ public class TaskService {
         return taskRepository.findById(taskId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Tarefa não encontrada"));
+                                "Task not found."));
     }
 
     private User findUser(Long userId) {
@@ -164,10 +216,30 @@ public class TaskService {
         return userRepository.findById(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Usuário não encontrado"));
+                                "User not found."));
     }
 
-    private void validateProjectAccess(Project project) {
+    private Task buildTask(
+            TaskRequest request,
+            Project project,
+            User assignee,
+            User creator) {
+
+        Task task = new Task();
+
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setPriority(request.getPriority());
+        task.setDeadline(request.getDeadline());
+        task.setProject(project);
+        task.setAssignee(assignee);
+        task.setCreatedBy(creator);
+        task.setStatus(TaskStatus.TODO);
+
+        return task;
+    }
+
+    private void checkProjectAccess(Project project) {
 
         User currentUser = currentUserService.getCurrentUser();
 
@@ -181,11 +253,11 @@ public class TaskService {
 
         if (!hasAccess) {
             throw new BusinessException(
-                    "Usuário não possui acesso ao projeto.");
+                    "The user does not have access to the project.");
         }
     }
 
-    private void validateTaskManagement(Task task) {
+    private void checkTaskManagementPermission(Task task) {
 
         User currentUser = currentUserService.getCurrentUser();
 
@@ -196,11 +268,11 @@ public class TaskService {
 
         if (!canManage) {
             throw new BusinessException(
-                    "Usuário não possui permissão para esta operação.");
+                    "The user does not have permission for this operation.");
         }
     }
 
-    private void validateStatusUpdatePermission(Task task) {
+    private void checkStatusUpdatePermission(Task task) {
 
         User currentUser = currentUserService.getCurrentUser();
 
@@ -211,8 +283,23 @@ public class TaskService {
 
         if (!canUpdate) {
             throw new BusinessException(
-                    "Usuário não pode alterar o status da tarefa.");
+                    "The user cannot change the task status.");
         }
+    }
+
+    private void validateStatusChange(
+            TaskStatus currentStatus,
+            TaskStatus newStatus) {
+
+
+        if (currentStatus == TaskStatus.TODO
+                && newStatus == TaskStatus.DONE) {
+
+            throw new BusinessException(
+                    "A TODO task cannot be changed to DONE directly."
+            );
+        }
+
     }
 
     private TaskResponse toResponse(Task task) {
