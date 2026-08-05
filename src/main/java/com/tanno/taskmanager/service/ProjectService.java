@@ -3,6 +3,7 @@ package com.tanno.taskmanager.service;
 import com.tanno.taskmanager.dto.request.ProjectRequest;
 import com.tanno.taskmanager.dto.response.ProjectResponse;
 import com.tanno.taskmanager.dto.response.UserResponse;
+import com.tanno.taskmanager.enums.Role;
 import com.tanno.taskmanager.exception.BusinessException;
 import com.tanno.taskmanager.exception.ResourceNotFoundException;
 import com.tanno.taskmanager.model.Project;
@@ -29,6 +30,8 @@ public class ProjectService {
     }
 
     public ProjectResponse create(ProjectRequest request) {
+
+        checkAdminPermission();
 
         User owner = currentUserService.getCurrentUser();
 
@@ -73,6 +76,8 @@ public class ProjectService {
 
     public ProjectResponse update(Long id, ProjectRequest request) {
 
+        checkAdminPermission();
+
         Project project = projectRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -88,6 +93,8 @@ public class ProjectService {
     }
 
     public void delete(Long id) {
+
+        checkAdminPermission();
 
         Project project = projectRepository.findById(id)
                 .orElseThrow(() ->
@@ -232,6 +239,18 @@ public class ProjectService {
                     "The user does not have access to this project."
             );
 
+        }
+    }
+
+    private void checkAdminPermission() {
+
+        User currentUser = currentUserService.getCurrentUser();
+
+        if (!currentUser.getRole().equals(Role.ADMIN)) {
+
+            throw new BusinessException(
+                    "Only administrators can manage projects."
+            );
         }
     }
 }

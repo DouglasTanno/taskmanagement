@@ -2,6 +2,7 @@ package com.tanno.taskmanager.service;
 
 import com.tanno.taskmanager.dto.request.ProjectRequest;
 import com.tanno.taskmanager.dto.response.ProjectResponse;
+import com.tanno.taskmanager.enums.Role;
 import com.tanno.taskmanager.exception.BusinessException;
 import com.tanno.taskmanager.exception.ResourceNotFoundException;
 import com.tanno.taskmanager.model.Project;
@@ -19,8 +20,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProjectServiceTest {
@@ -42,6 +42,7 @@ public class ProjectServiceTest {
 
         User owner = new User();
         owner.setId(1L);
+        owner.setRole(Role.ADMIN);
 
         ProjectRequest request = new ProjectRequest();
         request.setName("Projeto Teste");
@@ -138,8 +139,15 @@ public class ProjectServiceTest {
     @Test
     void shouldDeleteProjectSuccessfully() {
 
+        User admin = new User();
+        admin.setId(1L);
+        admin.setRole(Role.ADMIN);
+
         Project project = new Project();
         project.setId(1L);
+
+        when(currentUserService.getCurrentUser())
+                .thenReturn(admin);
 
         when(projectRepository.findById(1L))
                 .thenReturn(Optional.of(project));
@@ -147,6 +155,7 @@ public class ProjectServiceTest {
         projectService.delete(1L);
 
         verify(projectRepository).delete(project);
+
     }
 
     @Test
@@ -215,6 +224,61 @@ public class ProjectServiceTest {
                 () -> projectService.addMember(1L, 3L)
         );
 
+    }
+
+    @Test
+    void shouldNotCreateProjectWhenUserIsNotAdmin() {
+
+        User user = new User();
+        user.setId(1L);
+        user.setRole(Role.USER);
+
+        ProjectRequest request = new ProjectRequest();
+        request.setName("Projeto Teste");
+        request.setDescription("Descrição");
+
+        when(currentUserService.getCurrentUser())
+                .thenReturn(user);
+
+        BusinessException exception =
+                assertThrows(
+                        BusinessException.class,
+                        () -> projectService.create(request)
+                );
+
+        assertEquals(
+                "Only administrators can manage projects.",
+                exception.getMessage()
+        );
+
+        verify(projectRepository, never())
+                .save(any(Project.class));
+    }
+
+    @Test
+    void shouldNotDeleteProjectWhenUserIsNotAdmin() {
+
+        User user = new User();
+        user.setId(1L);
+        user.setRole(Role.USER);
+
+
+        when(currentUserService.getCurrentUser())
+                .thenReturn(user);
+
+        BusinessException exception =
+                assertThrows(
+                        BusinessException.class,
+                        () -> projectService.delete(10L)
+                );
+
+        assertEquals(
+                "Only administrators can manage projects.",
+                exception.getMessage()
+        );
+
+        verify(projectRepository, never())
+                .delete(any(Project.class));
     }
 
 }

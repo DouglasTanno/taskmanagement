@@ -2,5 +2,5 @@ package com.tanno.taskmanager.enums;
 
 public enum Role {
     ADMIN,
-    MEMBER
+    USER, MEMBER
 }

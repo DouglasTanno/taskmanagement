@@ -178,6 +178,12 @@ public class TaskService {
 
         checkStatusUpdatePermission(task);
 
+        if (task.getPriority() == Priority.CRITICAL
+                && status == TaskStatus.DONE) {
+
+            checkCriticalTaskPermission(task);
+        }
+
         if (task.getStatus() == TaskStatus.DONE &&
                 status != TaskStatus.DONE) {
 
@@ -358,6 +364,25 @@ public class TaskService {
 
             throw new BusinessException(
                     "A TODO task cannot be changed to DONE directly."
+            );
+        }
+
+    }
+
+    private void checkCriticalTaskPermission(Task task) {
+
+        User currentUser = currentUserService.getCurrentUser();
+
+        boolean isAdmin =
+                task.getProject()
+                        .getOwner()
+                        .getId()
+                        .equals(currentUser.getId());
+
+
+        if (!isAdmin) {
+            throw new BusinessException(
+                    "Only project admin can change task status."
             );
         }
 
