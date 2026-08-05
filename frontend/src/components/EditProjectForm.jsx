@@ -20,12 +20,10 @@ function EditProjectForm({
                              onClose
                          }) {
 
-
     const [name, setName] = useState(project.name);
     const [description, setDescription] = useState(
         project.description || ""
     );
-
     const [users, setUsers] = useState([]);
     const [members, setMembers] = useState([]);
 
@@ -34,29 +32,23 @@ function EditProjectForm({
     async function loadData() {
 
         try {
-
             const usersResponse =
                 await api.get("/users");
-
 
             const membersResponse =
                 await api.get(
                     `/projects/${project.id}/members`
                 );
 
-
             setUsers(
                 usersResponse.data
             );
-
 
             setMembers(
                 membersResponse.data.map(
                     user => user.id
                 )
             );
-
-
         } catch (error) {
 
             console.log(error);
@@ -67,20 +59,15 @@ function EditProjectForm({
 
     }
 
-
-
     useEffect(() => {
 
         loadData();
 
     }, [project.id]);
 
-
-
     async function handleSubmit(event) {
 
         event.preventDefault();
-
 
         try {
 
@@ -92,11 +79,8 @@ function EditProjectForm({
                 }
             );
 
-
             onUpdated();
-
             onClose();
-
 
         } catch (error) {
 
@@ -110,8 +94,6 @@ function EditProjectForm({
 
     }
 
-
-
     async function handleMembersChange(
         event,
         newValue,
@@ -121,17 +103,12 @@ function EditProjectForm({
 
 
         const oldMembers = members;
-
-
         const newMembers =
             newValue.map(
                 user => user.id
             );
 
-
         try {
-
-
             if (reason === "removeOption") {
 
 
@@ -141,14 +118,11 @@ function EditProjectForm({
                             !newMembers.includes(id)
                     );
 
-
                 await api.delete(
                     `/projects/${project.id}/members/${removedUserId}`
                 );
 
             }
-
-
 
             if (reason === "selectOption") {
 
@@ -160,10 +134,7 @@ function EditProjectForm({
                 await api.post(
                     `/projects/${project.id}/members/${addedUserId}`
                 );
-
             }
-
-
 
             setMembers(newMembers);
 
@@ -180,8 +151,6 @@ function EditProjectForm({
 
     }
 
-
-
     return (
 
         <Stack
@@ -194,32 +163,19 @@ function EditProjectForm({
             }}
         >
 
-
             <Stack
                 direction="row"
                 justifyContent="space-between"
                 alignItems="center"
             >
-
-                <Typography
-                    variant="h6"
-                >
+                <Typography variant="h6">
                     Editar Projeto
                 </Typography>
 
-
-                <IconButton
-                    onClick={onClose}
-                >
-
+                <IconButton onClick={onClose}>
                     <CloseIcon />
-
                 </IconButton>
-
-
             </Stack>
-
-
 
             <TextField
                 label="Nome"
@@ -230,8 +186,6 @@ function EditProjectForm({
                 required
             />
 
-
-
             <TextField
                 label="Descrição"
                 multiline
@@ -241,8 +195,6 @@ function EditProjectForm({
                     setDescription(e.target.value)
                 }
             />
-
-
 
             <Autocomplete
                 multiple
@@ -286,8 +238,6 @@ function EditProjectForm({
 
             />
 
-
-
             <Stack
                 direction="row"
                 justifyContent="flex-end"
@@ -300,8 +250,6 @@ function EditProjectForm({
                     Cancelar
                 </Button>
 
-
-
                 <Button
                     type="submit"
                     variant="contained"
@@ -309,10 +257,7 @@ function EditProjectForm({
                     Salvar
                 </Button>
 
-
             </Stack>
-
-
         </Stack>
 
     );
