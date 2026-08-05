@@ -24,10 +24,6 @@ public class OpenApiConfig {
                         .title("Task Manager API")
                         .description("REST API para gerenciamento de projetos e tarefas.")
                         .version("1.0.0"))
-                .addSecurityItem(
-                        new SecurityRequirement()
-                                .addList(securitySchemeName)
-                )
                 .components(
                         new Components()
                                 .addSecuritySchemes(

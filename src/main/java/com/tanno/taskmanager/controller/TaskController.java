@@ -3,6 +3,7 @@ package com.tanno.taskmanager.controller;
 import com.tanno.taskmanager.dto.request.TaskRequest;
 import com.tanno.taskmanager.dto.request.TaskStatusRequest;
 import com.tanno.taskmanager.dto.response.TaskResponse;
+import com.tanno.taskmanager.dto.response.TaskSummaryResponse;
 import com.tanno.taskmanager.service.TaskService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,6 +47,20 @@ public class TaskController {
             @PathVariable Long taskId) {
 
         return taskService.findById(taskId);
+    }
+
+    @GetMapping("/search")
+    public List<TaskResponse> search(
+            @RequestParam String text) {
+
+        return taskService.search(text);
+    }
+
+    @GetMapping("/summary")
+    public TaskSummaryResponse summary(
+            @PathVariable Long projectId) {
+
+        return taskService.summary(projectId);
     }
 
     @PutMapping("/{taskId}")

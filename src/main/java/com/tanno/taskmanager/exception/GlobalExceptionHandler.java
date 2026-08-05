@@ -12,7 +12,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleBusinessException(BusinessException ex) {
 
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
-        problem.setTitle("Erro de regra de negócio");
+        problem.setTitle("Business rule error.");
         problem.setDetail(ex.getMessage());
 
         return problem;
@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
     public ProblemDetail handleNotFound(ResourceNotFoundException ex) {
 
         ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
-        problem.setTitle("Recurso não encontrado");
+        problem.setTitle("Requested resource could not be found.");
         problem.setDetail(ex.getMessage());
 
         return problem;

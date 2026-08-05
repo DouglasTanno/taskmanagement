@@ -23,7 +23,7 @@ public class UserService {
     public UserResponse create(UserRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new BusinessException("Email já cadastrado.");
+            throw new BusinessException("Email already registered.");
         }
 
         User user = new User();
