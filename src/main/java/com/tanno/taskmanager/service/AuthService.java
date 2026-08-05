@@ -38,7 +38,10 @@ public class AuthService {
         }
 
         return new LoginResponse(
-                jwtService.generateToken(user.getEmail())
+                jwtService.generateToken(user.getEmail()),
+                user.getId(),
+                user.getName(),
+                user.getRole()
         );
     }
 }

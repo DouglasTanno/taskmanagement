@@ -184,13 +184,6 @@ public class TaskService {
             checkCriticalTaskPermission(task);
         }
 
-        if (task.getStatus() == TaskStatus.DONE &&
-                status != TaskStatus.DONE) {
-
-            throw new BusinessException(
-                    "A completed task cannot revert to a previous status.");
-        }
-
         if (status == TaskStatus.IN_PROGRESS &&
                 task.getStatus() != TaskStatus.IN_PROGRESS) {
 
@@ -364,6 +357,14 @@ public class TaskService {
 
             throw new BusinessException(
                     "A TODO task cannot be changed to DONE directly."
+            );
+        }
+
+        if (currentStatus == TaskStatus.DONE
+                && newStatus == TaskStatus.TODO) {
+
+            throw new BusinessException(
+                    "A DONE task cannot be changed to TODO directly."
             );
         }
 

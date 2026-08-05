@@ -17,6 +17,7 @@ function ProjectCard({ project }) {
 
     const navigate = useNavigate();
     const [openEdit, setOpenEdit] = useState(false);
+    const user = JSON.parse(localStorage.getItem("user"));
 
 
     return (
@@ -81,6 +82,7 @@ function ProjectCard({ project }) {
 
                 <Button
                     onClick={() => setOpenEdit(true)}
+                    disabled={user.role !== "ADMIN"}
                 >
                     Editar
                 </Button>

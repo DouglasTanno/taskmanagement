@@ -11,9 +11,19 @@ const authService = {
             password
         });
 
-        const token = response.data.token;
+        localStorage.setItem(
+            "token",
+            response.data.token
+        );
 
-        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(
+            "user",
+            JSON.stringify({
+                id: response.data.id,
+                name: response.data.name,
+                role: response.data.role
+            })
+        );
 
         return response.data;
     },

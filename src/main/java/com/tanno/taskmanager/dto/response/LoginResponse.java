@@ -1,5 +1,6 @@
 package com.tanno.taskmanager.dto.response;
 
+import com.tanno.taskmanager.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -8,4 +9,7 @@ import lombok.Getter;
 public class LoginResponse {
 
     private String token;
+    private Long id;
+    private String name;
+    private Role role;
 }

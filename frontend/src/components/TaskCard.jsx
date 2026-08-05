@@ -15,10 +15,10 @@ import {
 import EditTaskForm from "./EditTaskForm";
 
 
-function TaskCard({ task, onStatusUpdated }) {
+function TaskCard({ task, tasks, onStatusUpdated }) {
 
     const [editing, setEditing] = useState(false);
-
+    const user = JSON.parse(localStorage.getItem("user"));
 
     const priorityLabels = {
         LOW: "Baixa",
@@ -26,7 +26,6 @@ function TaskCard({ task, onStatusUpdated }) {
         HIGH: "Alta",
         CRITICAL: "Crítica"
     };
-
 
     async function handleStatusChange(event) {
 
@@ -44,13 +43,47 @@ function TaskCard({ task, onStatusUpdated }) {
             return;
         }
 
-        if (newStatus === "DONE") {
+        if (
+            task.status === "DONE" &&
+            newStatus === "TODO"
+        ) {
 
-            const confirmed = window.confirm(
-                "Tem certeza que deseja concluir esta tarefa?\n\nApós concluída, o status não poderá mais ser alterado."
+            alert(
+                "Uma tarefa concluída deve estar em andamento antes de ficar pendente."
             );
 
-            if (!confirmed) {
+            return;
+        }
+
+        if (
+            task.priority === "CRITICAL" &&
+            newStatus === "DONE" &&
+            user.role !== "ADMIN"
+        ) {
+
+            alert(
+                "Apenas administradores podem concluir tarefas críticas."
+            );
+
+            return;
+        }
+
+        if (
+            newStatus === "IN_PROGRESS" &&
+            task.status !== "IN_PROGRESS"
+        ) {
+
+            const inProgressCount = tasks.filter(t =>
+                t.assigneeId === task.assigneeId &&
+                t.status === "IN_PROGRESS"
+            ).length;
+
+            if (inProgressCount >= 5) {
+
+                alert(
+                    "O responsável já possui 5 tarefas em andamento."
+                );
+
                 return;
             }
         }
@@ -74,25 +107,21 @@ function TaskCard({ task, onStatusUpdated }) {
 
     }
 
-
     async function handleDelete() {
 
         const confirmDelete = window.confirm(
             "Deseja excluir esta tarefa?"
         );
 
-
         if (!confirmDelete) {
             return;
         }
-
 
         try {
 
             await api.delete(
                 `/projects/${task.projectId}/tasks/${task.id}`
             );
-
 
             onStatusUpdated();
 
@@ -102,18 +131,12 @@ function TaskCard({ task, onStatusUpdated }) {
             console.log(error);
 
         }
-
     }
 
-
     if (editing) {
-
         return (
-
             <Card elevation={2}>
-
                 <CardContent>
-
                     <EditTaskForm
                         task={task}
                         onUpdated={() => {
@@ -126,15 +149,10 @@ function TaskCard({ task, onStatusUpdated }) {
                             setEditing(false)
                         }
                     />
-
                 </CardContent>
-
             </Card>
-
         );
-
     }
-
 
     return (
 
@@ -162,7 +180,6 @@ function TaskCard({ task, onStatusUpdated }) {
 
                 )}
 
-
                 <Stack
                     direction="row"
                     spacing={1}
@@ -176,12 +193,10 @@ function TaskCard({ task, onStatusUpdated }) {
 
                 </Stack>
 
-
                 <Select
                     size="small"
                     value={task.status}
                     onChange={handleStatusChange}
-                    disabled={task.status === "DONE"}
                     sx={{ mt: 2 }}
                 >
 
@@ -199,7 +214,6 @@ function TaskCard({ task, onStatusUpdated }) {
 
                 </Select>
 
-
                 <Stack
                     direction="row"
                     spacing={1}
@@ -209,7 +223,6 @@ function TaskCard({ task, onStatusUpdated }) {
                     <Button
                         variant="text"
                         size="small"
-                        disabled={task.status === "DONE"}
                         onClick={() =>
                             setEditing(true)
                         }
@@ -219,7 +232,6 @@ function TaskCard({ task, onStatusUpdated }) {
                     >
                         Editar
                     </Button>
-
 
                     <Button
                         variant="text"
@@ -233,17 +245,13 @@ function TaskCard({ task, onStatusUpdated }) {
                         Excluir
                     </Button>
 
-
                 </Stack>
 
-
             </CardContent>
-
         </Card>
 
     );
 
 }
-
 
 export default TaskCard;

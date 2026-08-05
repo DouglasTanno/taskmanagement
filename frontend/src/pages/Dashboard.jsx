@@ -20,6 +20,7 @@ function Dashboard() {
 
     const [projects, setProjects] = useState([]);
     const [openForm, setOpenForm] = useState(false);
+    const user = JSON.parse(localStorage.getItem("user"));
 
 
     async function loadProjects() {
@@ -88,13 +89,12 @@ function Dashboard() {
                         onClick={() =>
                             setOpenForm(true)
                         }
+                        disabled={user.role !== "ADMIN"}
                     >
                         Novo Projeto
                     </Button>
 
-
                 </Stack>
-
 
             </Paper>
 

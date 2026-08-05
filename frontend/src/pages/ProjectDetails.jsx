@@ -274,6 +274,7 @@ function ProjectDetails() {
                                     <TaskCard
                                         key={task.id}
                                         task={task}
+                                        tasks={tasks}
                                         onStatusUpdated={loadTasks}
                                     />
 
