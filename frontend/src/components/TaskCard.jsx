@@ -32,6 +32,18 @@ function TaskCard({ task, onStatusUpdated }) {
 
         const newStatus = event.target.value;
 
+        if (
+            task.status === "TODO" &&
+            newStatus === "DONE"
+        ) {
+
+            alert(
+                "Uma tarefa pendente deve estar em andamento antes de ser concluída."
+            );
+
+            return;
+        }
+
         if (newStatus === "DONE") {
 
             const confirmed = window.confirm(
@@ -197,6 +209,7 @@ function TaskCard({ task, onStatusUpdated }) {
                     <Button
                         variant="text"
                         size="small"
+                        disabled={task.status === "DONE"}
                         onClick={() =>
                             setEditing(true)
                         }
