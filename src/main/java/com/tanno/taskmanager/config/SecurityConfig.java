@@ -32,8 +32,19 @@ public class SecurityConfig {
                 .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/users").permitAll()
+
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/assets/**",
+                                "/login",
+                                "/dashboard",
+                                "/projects/*"
+                        ).permitAll()
+
                         .requestMatchers(
                                 "/h2-console/**",
                                 "/swagger-ui/**",
