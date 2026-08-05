@@ -3,6 +3,7 @@ package com.tanno.taskmanager.service;
 import com.tanno.taskmanager.dto.request.ProjectRequest;
 import com.tanno.taskmanager.dto.response.ProjectResponse;
 import com.tanno.taskmanager.dto.response.UserResponse;
+import com.tanno.taskmanager.exception.BusinessException;
 import com.tanno.taskmanager.exception.ResourceNotFoundException;
 import com.tanno.taskmanager.model.Project;
 import com.tanno.taskmanager.model.User;
@@ -44,7 +45,14 @@ public class ProjectService {
 
     public List<ProjectResponse> findAll() {
 
-        return projectRepository.findAll()
+        User currentUser =
+                currentUserService.getCurrentUser();
+
+        return projectRepository
+                .findByOwnerIdOrMembersId(
+                        currentUser.getId(),
+                        currentUser.getId()
+                )
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
@@ -57,6 +65,8 @@ public class ProjectService {
                         new ResourceNotFoundException(
                                 "Projeto não encontrado"
                         ));
+
+        checkProjectAccess(project);
 
         return toResponse(project);
     }
@@ -88,6 +98,28 @@ public class ProjectService {
         projectRepository.delete(project);
     }
 
+    private void checkProjectManagementPermission(Project project) {
+
+        User currentUser =
+                currentUserService.getCurrentUser();
+
+
+        boolean isOwner =
+                project.getOwner()
+                        .getId()
+                        .equals(currentUser.getId());
+
+
+        if (!isOwner) {
+
+            throw new BusinessException(
+                    "Only the project owner can manage members."
+            );
+
+        }
+
+    }
+
     private ProjectResponse toResponse(Project project) {
 
         return new ProjectResponse(
@@ -105,11 +137,9 @@ public class ProjectService {
     public List<UserResponse> findMembers(Long projectId) {
 
         Project project = findProject(projectId);
-
         List<User> users = new ArrayList<>();
 
         users.add(project.getOwner());
-
         users.addAll(project.getMembers());
 
 
@@ -123,11 +153,17 @@ public class ProjectService {
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Projeto não encontrado"));
+                        new ResourceNotFoundException(
+                                "Projeto não encontrado"
+                        ));
+
+        checkProjectManagementPermission(project);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Usuário não encontrado"));
+                        new ResourceNotFoundException(
+                                "Usuário não encontrado"
+                        ));
 
         project.getMembers().add(user);
 
@@ -140,7 +176,11 @@ public class ProjectService {
 
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException("Projeto não encontrado"));
+                        new ResourceNotFoundException(
+                                "Projeto não encontrado"
+                        ));
+
+        checkProjectManagementPermission(project);
 
         project.getMembers()
                 .removeIf(user -> user.getId().equals(userId));
@@ -168,5 +208,30 @@ public class ProjectService {
                 user.getRole()
         );
 
+    }
+
+    private void checkProjectAccess(Project project) {
+
+        User currentUser =
+                currentUserService.getCurrentUser();
+
+        boolean hasAccess =
+                project.getOwner().getId()
+                        .equals(currentUser.getId())
+                        ||
+                        project.getMembers()
+                                .stream()
+                                .anyMatch(user ->
+                                        user.getId()
+                                                .equals(currentUser.getId())
+                                );
+
+        if (!hasAccess) {
+
+            throw new BusinessException(
+                    "The user does not have access to this project."
+            );
+
+        }
     }
 }

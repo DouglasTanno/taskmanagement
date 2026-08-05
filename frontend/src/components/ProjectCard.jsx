@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -5,13 +6,17 @@ import {
     CardContent,
     CardActions,
     Typography,
-    Button
+    Button,
+    Dialog
 } from "@mui/material";
+
+import EditProjectForm from "./EditProjectForm";
 
 
 function ProjectCard({ project }) {
 
     const navigate = useNavigate();
+    const [openEdit, setOpenEdit] = useState(false);
 
 
     return (
@@ -73,6 +78,29 @@ function ProjectCard({ project }) {
                 >
                     Abrir Projeto
                 </Button>
+
+                <Button
+                    onClick={() => setOpenEdit(true)}
+                >
+                    Editar
+                </Button>
+
+                <Dialog
+                    open={openEdit}
+                    onClose={() => setOpenEdit(false)}
+                >
+
+                    <EditProjectForm
+                        project={project}
+                        onUpdated={() => {
+                            setOpenEdit(false);
+                        }}
+                        onClose={() =>
+                            setOpenEdit(false)
+                        }
+                    />
+
+                </Dialog>
 
 
             </CardActions>

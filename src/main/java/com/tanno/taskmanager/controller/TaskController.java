@@ -4,6 +4,8 @@ import com.tanno.taskmanager.dto.request.TaskRequest;
 import com.tanno.taskmanager.dto.request.TaskStatusRequest;
 import com.tanno.taskmanager.dto.response.TaskResponse;
 import com.tanno.taskmanager.dto.response.TaskSummaryResponse;
+import com.tanno.taskmanager.enums.Priority;
+import com.tanno.taskmanager.enums.TaskStatus;
 import com.tanno.taskmanager.service.TaskService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,6 +13,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @SecurityRequirement(name = "bearerAuth")
@@ -37,9 +40,36 @@ public class TaskController {
 
     @GetMapping
     public List<TaskResponse> findAll(
-            @PathVariable Long projectId) {
+            @PathVariable Long projectId,
 
-        return taskService.findAllByProject(projectId);
+            @RequestParam(required = false)
+            TaskStatus status,
+
+            @RequestParam(required = false)
+            Priority priority,
+
+            @RequestParam(required = false)
+            Long assigneeId,
+
+            @RequestParam(required = false)
+            LocalDateTime startDate,
+
+            @RequestParam(required = false)
+            LocalDateTime endDate,
+
+            @RequestParam(required = false)
+            String sort
+    ) {
+
+        return taskService.findAllFiltered(
+                projectId,
+                status,
+                priority,
+                assigneeId,
+                startDate,
+                endDate,
+                sort
+        );
     }
 
     @GetMapping("/{taskId}")

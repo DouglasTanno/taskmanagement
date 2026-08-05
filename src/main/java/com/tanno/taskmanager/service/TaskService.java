@@ -15,6 +15,8 @@ import com.tanno.taskmanager.repository.TaskRepository;
 import com.tanno.taskmanager.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -79,6 +81,7 @@ public class TaskService {
                 .toList();
     }
 
+
     public TaskResponse findById(Long id) {
 
         Task task = findTask(id);
@@ -86,6 +89,64 @@ public class TaskService {
         checkProjectAccess(task.getProject());
 
         return toResponse(task);
+    }
+
+    public List<TaskResponse> findAllFiltered(
+            Long projectId,
+            TaskStatus status,
+            Priority priority,
+            Long assigneeId,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
+            String sort
+    ) {
+
+        Project project = findProject(projectId);
+
+        checkProjectAccess(project);
+
+
+        List<Task> tasks =
+                taskRepository.findByProjectId(projectId);
+
+
+
+        return tasks.stream()
+
+                .filter(task ->
+                        status == null ||
+                                task.getStatus() == status
+                )
+
+                .filter(task ->
+                        priority == null ||
+                                task.getPriority() == priority
+                )
+
+                .filter(task ->
+                        assigneeId == null ||
+                                task.getAssignee()
+                                        .getId()
+                                        .equals(assigneeId)
+                )
+
+                .filter(task ->
+                        startDate == null ||
+                                !task.getCreatedAt()
+                                        .isBefore(startDate)
+                )
+
+                .filter(task ->
+                        endDate == null ||
+                                !task.getCreatedAt()
+                                        .isAfter(endDate)
+                )
+
+                .sorted(getComparator(sort))
+
+                .map(this::toResponse)
+
+                .toList();
     }
 
     public TaskResponse update(Long id, TaskRequest request) {
@@ -299,6 +360,43 @@ public class TaskService {
                     "A TODO task cannot be changed to DONE directly."
             );
         }
+
+    }
+
+    private Comparator<Task> getComparator(String sort) {
+
+        if (sort == null) {
+            return Comparator.comparing(
+                    Task::getCreatedAt
+            ).reversed();
+        }
+
+        return switch(sort) {
+
+            case "priority" ->
+                    Comparator.comparing(
+                            Task::getPriority
+                    );
+
+            case "deadline" ->
+                    Comparator.comparing(
+                            Task::getDeadline,
+                            Comparator.nullsLast(
+                                    Comparator.naturalOrder()
+                            )
+                    );
+
+            case "createdAt" ->
+                    Comparator.comparing(
+                            Task::getCreatedAt
+                    );
+
+            default ->
+                    Comparator.comparing(
+                            Task::getCreatedAt
+                    ).reversed();
+
+        };
 
     }
 

@@ -9,6 +9,8 @@ import com.tanno.taskmanager.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -40,5 +42,19 @@ public class UserService {
                 savedUser.getEmail(),
                 savedUser.getRole()
         );
+    }
+
+    public List<UserResponse> findAll() {
+
+        return userRepository.findAll()
+                .stream()
+                .map(user -> new UserResponse(
+                        user.getId(),
+                        user.getName(),
+                        user.getEmail(),
+                        user.getRole()
+                ))
+                .toList();
+
     }
 }
