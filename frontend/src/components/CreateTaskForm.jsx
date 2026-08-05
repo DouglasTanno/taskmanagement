@@ -108,14 +108,6 @@ function CreateTaskForm({
                 >
                     Nova tarefa
                 </Typography>
-
-
-                <IconButton
-                    onClick={onClose}
-                >
-                    <CloseIcon />
-                </IconButton>
-
             </Stack>
 
 

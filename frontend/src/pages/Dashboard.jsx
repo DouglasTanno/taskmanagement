@@ -10,7 +10,9 @@ import {
     Typography,
     Button,
     Grid,
-    Dialog
+    Dialog,
+    Paper,
+    Box
 } from "@mui/material";
 
 
@@ -48,30 +50,54 @@ function Dashboard() {
 
         <Layout>
 
-            <Stack
-                direction="row"
-                justifyContent="space-between"
-                alignItems="center"
-                mb={4}
+
+            <Paper
+                elevation={2}
+                sx={{
+                    p: 4,
+                    mb: 4,
+                    borderRadius: 3
+                }}
             >
 
-                <Typography
-                    variant="h4"
+                <Stack
+                    spacing={2}
                 >
-                    Dashboard
-                </Typography>
+
+                    <Typography
+                        variant="h4"
+                        fontWeight={700}
+                    >
+                        Dashboard
+                    </Typography>
 
 
-                <Button
-                    variant="contained"
-                    onClick={() =>
-                        setOpenForm(true)
-                    }
-                >
-                    Novo Projeto
-                </Button>
+                    <Typography
+                        variant="body1"
+                        color="text.secondary"
+                    >
+                        Gerencie seus projetos e acompanhe suas tarefas.
+                    </Typography>
 
-            </Stack>
+
+                    <Button
+                        variant="contained"
+                        sx={{
+                            width: "fit-content"
+                        }}
+                        onClick={() =>
+                            setOpenForm(true)
+                        }
+                    >
+                        Novo Projeto
+                    </Button>
+
+
+                </Stack>
+
+
+            </Paper>
+
 
 
             <Dialog
@@ -97,20 +123,34 @@ function Dashboard() {
             </Dialog>
 
 
-            <Typography
-                variant="body1"
-                color="text.secondary"
-                mb={4}
+
+            <Paper
+                elevation={1}
+                sx={{
+                    p: 3,
+                    mb: 4,
+                    borderRadius: 3
+                }}
             >
-                Gerencie seus projetos.
-            </Typography>
+
+                <Typography
+                    variant="h6"
+                    fontWeight={600}
+                >
+                    Meus Projetos
+                </Typography>
 
 
-            <Typography
-                mb={2}
-            >
-                Total de projetos: {projects.length}
-            </Typography>
+                <Typography
+                    color="text.secondary"
+                    mt={1}
+                >
+                    Total de projetos: {projects.length}
+                </Typography>
+
+
+            </Paper>
+
 
 
             <Grid
@@ -135,6 +175,7 @@ function Dashboard() {
                     </Grid>
 
                 ))}
+
 
             </Grid>
 

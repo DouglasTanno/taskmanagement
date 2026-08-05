@@ -32,6 +32,17 @@ function TaskCard({ task, onStatusUpdated }) {
 
         const newStatus = event.target.value;
 
+        if (newStatus === "DONE") {
+
+            const confirmed = window.confirm(
+                "Tem certeza que deseja concluir esta tarefa?\n\nApós concluída, o status não poderá mais ser alterado."
+            );
+
+            if (!confirmed) {
+                return;
+            }
+        }
+
         try {
 
             await api.patch(
@@ -40,7 +51,6 @@ function TaskCard({ task, onStatusUpdated }) {
                     status: newStatus
                 }
             );
-
 
             onStatusUpdated();
 
@@ -159,9 +169,8 @@ function TaskCard({ task, onStatusUpdated }) {
                     size="small"
                     value={task.status}
                     onChange={handleStatusChange}
-                    sx={{
-                        mt: 2
-                    }}
+                    disabled={task.status === "DONE"}
+                    sx={{ mt: 2 }}
                 >
 
                     <MenuItem value="TODO">

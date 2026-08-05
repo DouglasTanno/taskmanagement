@@ -76,13 +76,6 @@ function CreateProjectForm({
                 </Typography>
 
 
-                <IconButton
-                    onClick={onClose}
-                >
-                    <CloseIcon />
-                </IconButton>
-
-
             </Stack>
 
 
