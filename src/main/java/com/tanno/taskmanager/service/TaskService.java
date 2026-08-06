@@ -153,7 +153,7 @@ public class TaskService {
 
         Task task = findTask(id);
 
-        checkStatusUpdatePermission(task);
+        checkUpdatePermission(task);
 
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
@@ -171,7 +171,7 @@ public class TaskService {
 
         Task task = findTask(id);
 
-        checkTaskManagementPermission(task);
+        checkDeletePermission(task);
 
         taskRepository.delete(task);
     }
@@ -180,7 +180,7 @@ public class TaskService {
 
         Task task = findTask(id);
 
-        checkStatusUpdatePermission(task);
+        checkUpdatePermission(task);
 
         if (task.getPriority() == Priority.CRITICAL
                 && status == TaskStatus.DONE) {
@@ -321,33 +321,36 @@ public class TaskService {
         }
     }
 
-    private void checkTaskManagementPermission(Task task) {
+    private void checkDeletePermission(Task task) {
 
         User currentUser = currentUserService.getCurrentUser();
 
         boolean canManage =
                 task.getProject().getOwner().getId().equals(currentUser.getId())
                         ||
-                        task.getCreatedBy().getId().equals(currentUser.getId());
+                        task.getCreatedBy().getId().equals(currentUser.getId())
+                ;
 
         if (!canManage) {
             throw new BusinessException(
-                    "The user does not have permission for this operation.");
+                    "The user cannot delete the task.");
         }
     }
 
-    private void checkStatusUpdatePermission(Task task) {
+    private void checkUpdatePermission(Task task) {
 
         User currentUser = currentUserService.getCurrentUser();
 
         boolean canUpdate =
                 task.getAssignee().getId().equals(currentUser.getId())
                         ||
+                        task.getCreatedBy().getId().equals(currentUser.getId())
+                        ||
                         task.getProject().getOwner().getId().equals(currentUser.getId());
 
         if (!canUpdate) {
             throw new BusinessException(
-                    "The user cannot change the task status.");
+                    "The user cannot update the task.");
         }
     }
 

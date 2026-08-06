@@ -21,7 +21,8 @@ function TaskCard({ task, tasks, onStatusUpdated }) {
     const user = JSON.parse(localStorage.getItem("user"));
     const canManage =
         user.id === task.projectOwnerId ||
-        user.id === task.assigneeId;
+        user.id === task.assigneeId ||
+        user.id === task.projectOwnerId;
 
     const canDelete =
         user.id === task.createdById ||
