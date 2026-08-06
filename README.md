@@ -141,6 +141,7 @@ Com mais tempo, algumas melhorias poderiam ser implementadas:
 
 ### Frontend
 
+- Desenvolvimento de uma interface mais amigável e com melhor experiência de usuário (UX), incluindo melhorias de navegação, feedbacks visuais e interações mais intuitivas.
 - Implementação de drag and drop no quadro de tarefas para alterar o status das tarefas de forma mais intuitiva.
 - Exibição do usuário responsável pela tarefa nos cards das tarefas, apenas para visualização.
 - Exibição do criador dos projetos.
