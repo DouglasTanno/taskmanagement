@@ -32,4 +32,6 @@ public class TaskResponse {
     private Long assigneeId;
 
     private Long createdById;
+
+    private Long projectOwnerId;
 }

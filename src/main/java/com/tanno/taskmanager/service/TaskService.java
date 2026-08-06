@@ -153,12 +153,16 @@ public class TaskService {
 
         Task task = findTask(id);
 
-        checkTaskManagementPermission(task);
+        checkStatusUpdatePermission(task);
 
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
         task.setPriority(request.getPriority());
         task.setDeadline(request.getDeadline());
+
+        User assignee = findUser(request.getAssigneeId());
+
+        task.setAssignee(assignee);
 
         return toResponse(taskRepository.save(task));
     }
@@ -439,7 +443,8 @@ public class TaskService {
                 task.getDeadline(),
                 task.getProject().getId(),
                 task.getAssignee().getId(),
-                task.getCreatedBy().getId()
+                task.getCreatedBy().getId(),
+                task.getProject().getOwner().getId()
         );
     }
 }

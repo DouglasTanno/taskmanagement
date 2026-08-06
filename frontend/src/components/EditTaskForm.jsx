@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import api from "../api/api";
 
 import {
@@ -14,7 +14,33 @@ function EditTaskForm({ task, onUpdated, onCancel }) {
     const [title, setTitle] = useState(task.title);
     const [description, setDescription] = useState(task.description || "");
     const [priority, setPriority] = useState(task.priority);
+    const [assigneeId, setAssigneeId] = useState(task.assigneeId);
+    const [users, setUsers] = useState([]);
 
+    useEffect(() => {
+
+        async function loadMembers() {
+
+            try {
+
+                const response = await api.get(
+                    `/projects/${task.projectId}/members`
+                );
+
+                setUsers(response.data);
+
+            } catch (error) {
+
+                console.log(error);
+
+            }
+
+        }
+
+
+        loadMembers();
+
+    }, [task.projectId]);
 
     async function handleSubmit(event) {
 
@@ -28,7 +54,7 @@ function EditTaskForm({ task, onUpdated, onCancel }) {
                     title,
                     description,
                     priority,
-                    assigneeId: task.assigneeId
+                    assigneeId: Number(assigneeId)
                 }
             );
 
@@ -101,6 +127,27 @@ function EditTaskForm({ task, onUpdated, onCancel }) {
 
             </TextField>
 
+            <TextField
+                select
+                label="Responsável"
+                value={assigneeId}
+                onChange={(e) =>
+                    setAssigneeId(e.target.value)
+                }
+            >
+
+                {users.map(user => (
+
+                    <MenuItem
+                        key={user.id}
+                        value={user.id}
+                    >
+                        {user.name}
+                    </MenuItem>
+
+                ))}
+
+            </TextField>
 
             <Stack direction="row" spacing={1}>
 

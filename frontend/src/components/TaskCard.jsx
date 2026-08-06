@@ -19,6 +19,13 @@ function TaskCard({ task, tasks, onStatusUpdated }) {
 
     const [editing, setEditing] = useState(false);
     const user = JSON.parse(localStorage.getItem("user"));
+    const canManage =
+        user.id === task.projectOwnerId ||
+        user.id === task.assigneeId;
+
+    const canDelete =
+        user.id === task.createdById ||
+        user.id === task.projectOwnerId;
 
     const priorityLabels = {
         LOW: "Baixa",
@@ -196,6 +203,7 @@ function TaskCard({ task, tasks, onStatusUpdated }) {
                 <Select
                     size="small"
                     value={task.status}
+                    disabled={!canManage}
                     onChange={handleStatusChange}
                     sx={{ mt: 2 }}
                 >
@@ -223,6 +231,7 @@ function TaskCard({ task, tasks, onStatusUpdated }) {
                     <Button
                         variant="text"
                         size="small"
+                        disabled={!canManage}
                         onClick={() =>
                             setEditing(true)
                         }
@@ -237,6 +246,7 @@ function TaskCard({ task, tasks, onStatusUpdated }) {
                         variant="text"
                         color="error"
                         size="small"
+                        disabled={!canDelete}
                         onClick={handleDelete}
                         sx={{
                             textTransform: "none"
