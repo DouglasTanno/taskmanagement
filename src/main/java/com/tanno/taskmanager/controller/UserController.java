@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@SecurityRequirement(name = "bearerAuth")
 @Tag(name = "Users")
 @RestController
 @RequestMapping("/users")
@@ -29,6 +28,7 @@ public class UserController {
         return userService.create(request);
     }
 
+    @SecurityRequirement(name = "bearerAuth")
     @GetMapping
     public List<UserResponse> findAll() {
 
