@@ -40,8 +40,9 @@ public class ProjectService {
         project.setName(request.getName());
         project.setDescription(request.getDescription());
         project.setOwner(owner);
-
+        project.getMembers().add(owner);
         Project saved = projectRepository.save(project);
+
 
         return toResponse(saved);
     }
