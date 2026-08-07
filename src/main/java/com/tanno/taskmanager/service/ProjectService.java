@@ -67,7 +67,7 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Projeto não encontrado"
+                                "Project not found"
                         ));
 
         checkProjectAccess(project);
@@ -82,7 +82,7 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Projeto não encontrado"
+                                "Project not found"
                         ));
 
         project.setName(request.getName());
@@ -100,7 +100,7 @@ public class ProjectService {
         Project project = projectRepository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Projeto não encontrado"
+                                "Project not found"
                         ));
 
         projectRepository.delete(project);
@@ -162,7 +162,7 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Projeto não encontrado"
+                                "Project not found"
                         ));
 
         checkProjectManagementPermission(project);
@@ -170,7 +170,7 @@ public class ProjectService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Usuário não encontrado"
+                                "User not found"
                         ));
 
         project.getMembers().add(user);
@@ -185,7 +185,7 @@ public class ProjectService {
         Project project = projectRepository.findById(projectId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Projeto não encontrado"
+                                "Project not found"
                         ));
 
         checkProjectManagementPermission(project);
@@ -203,7 +203,7 @@ public class ProjectService {
         return projectRepository.findById(projectId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
-                                "Projeto não encontrado"
+                                "Project not found"
                         ));
     }
 
