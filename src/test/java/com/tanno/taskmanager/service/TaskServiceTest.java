@@ -167,6 +167,7 @@ public class TaskServiceTest {
 
         Project project = new Project();
         project.setOwner(owner);
+        project.getMembers().add(owner);
 
         User assignee = new User();
         assignee.setId(2L);
@@ -175,6 +176,7 @@ public class TaskServiceTest {
         task.setProject(project);
         task.setAssignee(assignee);
         task.setStatus(TaskStatus.TODO);
+        task.setCreatedBy(owner);
 
         when(taskRepository.findById(1L))
                 .thenReturn(Optional.of(task));
@@ -205,11 +207,13 @@ public class TaskServiceTest {
 
         Project project = new Project();
         project.setOwner(owner);
+        project.getMembers().add(owner);
 
         Task task = new Task();
         task.setProject(project);
         task.setAssignee(assignee);
         task.setStatus(TaskStatus.TODO);
+        task.setCreatedBy(owner);
 
         when(taskRepository.findById(1L))
                 .thenReturn(Optional.of(task));
