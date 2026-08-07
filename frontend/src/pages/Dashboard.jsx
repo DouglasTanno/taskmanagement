@@ -170,6 +170,7 @@ function Dashboard() {
 
                         <ProjectCard
                             project={project}
+                            onStatusUpdated={loadProjects}
                         />
 
                     </Grid>
