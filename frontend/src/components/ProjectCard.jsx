@@ -13,7 +13,7 @@ import {
 import EditProjectForm from "./EditProjectForm";
 
 
-function ProjectCard({ project }) {
+function ProjectCard({ project, onStatusUpdated }) {
 
     const navigate = useNavigate();
     const [openEdit, setOpenEdit] = useState(false);
@@ -96,6 +96,7 @@ function ProjectCard({ project }) {
                         project={project}
                         onUpdated={() => {
                             setOpenEdit(false);
+                            onStatusUpdated();
                         }}
                         onClose={() =>
                             setOpenEdit(false)
